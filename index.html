@@ -238,28 +238,23 @@ function findClinics() {
           });
           resultsDiv.innerHTML = html;
 
-          // Now geocode ONLY the 5 destinationAddresses in the sorted top5 (no unnecessary lookups)
-          // This greatly increases reliability and speed.
-          const geocoder2 = new google.maps.Geocoder();
-          let coordLookups = 0;
-          let coords = [];
-          let lookupOrder = [];
-
-          let processOne = function(idx) {
-            geocoder2.geocode({ address: allResults[idx].__destAddr }, (results, status) => {
-              if (status === "OK" && results[0]) {
-                coords[idx] = results[0].geometry.location;
-              } else {
-                coords[idx] = null;
-              }
-              coordLookups++;
-              if (coordLookups === 5) {
-                // All done, show map
-                showMap(origin, allResults.slice(0,5), coords);
-              }
-            });
-          };
-          for (let k=0; k<5; ++k) processOne(k);
+// Serial geocode with delay to avoid throttling
+function geocodeNext(index, coords, onDone) {
+  if (index >= 5) { onDone(coords); return; }
+  const geocoder2 = new google.maps.Geocoder();
+  geocoder2.geocode({ address: allResults[index].__destAddr }, (results, status) => {
+    if (status === "OK" && results[0]) {
+      coords[index] = results[0].geometry.location;
+    } else {
+      coords[index] = null;
+    }
+    setTimeout(() => geocodeNext(index + 1, coords, onDone), 200); // 200ms delay between calls
+  });
+}
+let coords = [];
+geocodeNext(0, coords, (coordsArr) => {
+  showMap(origin, allResults.slice(0, 5), coordsArr);
+});
         }
       });
     });
