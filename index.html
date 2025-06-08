@@ -148,7 +148,7 @@
   </style>
 </head>
 <body>
-  <div class="omwl-version">Version 1.7 &mdash; Updated 2024-06-08 (Compact above the fold, bold, pin fix)</div>
+  <div class="omwl-version">Version 1.8 &mdash; Updated 2024-06-08</div>
   <div class="omwl-title">Find Nearest Options Medical Clinic</div>
   <input type="text" id="zipInput" placeholder="Enter ZIP Code" disabled />
   <button id="findBtn" onclick="findClinics()" disabled>Find Clinics</button>
@@ -159,12 +159,8 @@
   </div>
 
 <script>
-const clinics = [{"name": "Chandler", "address": "2815 E Ocotillo Road, Suite 1, Chandler, AZ 85249", "hours": "Mon: 12p-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Brandon", "address": "2472 W Brandon Blvd, Brandon, FL 33511", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "St Pete", "address": "4301 4th St N, St. Petersburg, FL 33703", "hours": "Mon: 9a-4p | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Roswell", "address": "10800 Alpharetta Hwy, Suite 212, Roswell, GA 30076", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Snellville", "address": "1630 Scenic Hwy N, Suite C, Snellville, GA 30078", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Glenview", "address": "1440 Waukegan Rd, Glenview, IL 60025", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Lakeview", "address": "3212 N Lincoln Ave, Chicago, IL 60657", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Schaumburg", "address": "2642 W Schaumburg Rd, Schaumburg, IL 60194", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Carmel", "address": "2456 E 146th St, Carmel, IN 46033", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Novi", "address": "26156 Ingersol Dr, Novi, MI 48375", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: CLOSED | Thu: 9a-7pm | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "North Raleigh", "address": "8111 Creedmoor Rd, Suite 159, Raleigh, NC 27613", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: 8a-4p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Collegeville", "address": "121 Market St, Suite 3, Collegeville, PA 19426", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Arlington Heights", "address": "21 W Rand Rd, Arlington Heights, IL 60004", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Naperville", "address": "2960 Artesian Rd, Suite 144, Naperville, IL 60564", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Oaklawn", "address": "5116 W 95th St, Oak Lawn, IL 60453", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Orland Park", "address": "14215 South La Grange Rd, Suite 124, Orland Park, IL 60462", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Park Ridge", "address": "118 Euclid Ave, Park Ridge, IL 60068", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "South Loop", "address": "1147 S Wabash Ave, Chicago, IL 60605", "hours": "Mon: CLOSED | Tue: 7a-5:30p | Wed: 7a-5:30p | Thu: 7a-5:30p | Fri: 7a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "St Charles", "address": "2701 E Main St, Suite 101, St Charles, IL 60174", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Willowbrook", "address": "6300 Kingery Hwy, Suite 104, Willowbrook, IL 60527", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Fishers", "address": "13272 Market Square Dr, Suite 103, Fishers, IN 46038", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Rochester Hills", "address": "2863 S Rochester Rd, Rochester Hills, MI 48307", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Dublin", "address": "7537 Sawmill Rd, Dublin, OH 43016", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Gahanna", "address": "959 E Johnstown Rd, Gahanna, OH 43230", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Grove City", "address": "4084 Gantz Rd, Grove City, OH 43123", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Strongsville", "address": "18280 Royalton Rd, Strongsville, OH 44136", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "University Heights", "address": "13941 Cedar Rd, South Euclid, OH 44118", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Upper Arlington", "address": "3070 Kingsdale Ctr, Upper Arlington, OH 43221", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Westlake", "address": "30191 Detroit Road, Westlake, OH 44145", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Mesa", "address": "849 N Dobson Rd, Suite 109, Mesa, AZ 85201", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: CLOSED | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Carrollwood", "address": "13128 N Dale Mabry Hwy, Tampa, FL 33618", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Largo", "address": "10500 Ulmerton Rd, Suite 726, Largo, FL 33771", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Suwanee", "address": "3651 Peachtree Pkwy, Suite B, Suwanee, GA 30024", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 11a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Algonquin", "address": "1636 S Randall Rd, Algonquin, IL 60102", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Bucktown", "address": "1966 N Milwaukee Ave, Chicago, IL 60647", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: CLOSED | Thu: 8a-4p | Fri: CLOSED | Sat: CLOSED | Sun: CLOSED"}, {"name": "Vernon Hills", "address": "850 N Milwaukee Ave, STE 201, Vernon Hills, IL 60061", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: CLOSED | Thu: CLOSED | Fri: 8a-4p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Northeast Indy", "address": "3345 E 86th St, Indianapolis, IN 46240", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2pm | Sat: CLOSED | Sun: CLOSED"}, {"name": "Canton", "address": "41811 Ford Rd, Canton, MI 48187", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 9a-7p | Thu: CLOSED | Fri: 8a-2pm | Sat: CLOSED | Sun: CLOSED"}, {"name": "Kennesaw", "address": "1610 Ridenour Blvd, #104, Kennesaw, GA 30152", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 11a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Cary", "address": "2052 Kildaire Farm Rd, Cary, NC 27518", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 11a-7p | Thu: CLOSED | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Charlotte", "address": "3419 Toringdon Way, Suite 120, Charlotte, NC 28277", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 11a-7p | Thu: 8a-7p | Fri: 8a-4p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Malvern", "address": "50 National Ave, Suite 200, Malvern, PA 19355", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}];
-
-function createNumberedPinURL(number, color) {
-  // color: hex w/o #
-  return `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=${number}|${color}|FFFFFF`;
-}
+const clinics = [/* your clinics data here, unchanged */];
+// For brevity, keep your clinics array as it is in your file!
 
 function findClinics() {
   const zip = document.getElementById("zipInput").value;
@@ -180,15 +176,12 @@ function findClinics() {
     }
 
     const origin = results[0].geometry.location;
-
-    // Split clinics into batches of 25 or less
     const batchSize = 25;
     let batches = [];
     for (let i = 0; i < clinics.length; i += batchSize) {
       batches.push(clinics.slice(i, i + batchSize));
     }
     let allResults = [];
-    let allDestCoords = [];
     let pending = batches.length;
     let errorOccurred = false;
 
@@ -207,16 +200,13 @@ function findClinics() {
           return;
         }
 
-        // We'll use Google's returned destination addresses with the Geocoder only if needed.
         let destAddresses = response.destinationAddresses;
-
         response.rows[0].elements.forEach((element, idx) => {
           allResults.push({
             ...batch[idx],
             distance: element.distance?.text || "N/A",
             duration: element.duration?.text || "N/A",
             rawDistance: element.distance?.value || Infinity,
-            // keep which batch/dest we're on
             __destAddr: destAddresses[idx]
           });
         });
@@ -238,23 +228,23 @@ function findClinics() {
           });
           resultsDiv.innerHTML = html;
 
-// Serial geocode with delay to avoid throttling
-function geocodeNext(index, coords, onDone) {
-  if (index >= 5) { onDone(coords); return; }
-  const geocoder2 = new google.maps.Geocoder();
-  geocoder2.geocode({ address: allResults[index].__destAddr }, (results, status) => {
-    if (status === "OK" && results[0]) {
-      coords[index] = results[0].geometry.location;
-    } else {
-      coords[index] = null;
-    }
-    setTimeout(() => geocodeNext(index + 1, coords, onDone), 200); // 200ms delay between calls
-  });
-}
-let coords = [];
-geocodeNext(0, coords, (coordsArr) => {
-  showMap(origin, allResults.slice(0, 5), coordsArr);
-});
+          // Serial geocode with delay to avoid throttling
+          function geocodeNext(index, coords, onDone) {
+            if (index >= 5) { onDone(coords); return; }
+            const geocoder2 = new google.maps.Geocoder();
+            geocoder2.geocode({ address: allResults[index].__destAddr }, (results, status) => {
+              if (status === "OK" && results[0]) {
+                coords[index] = results[0].geometry.location;
+              } else {
+                coords[index] = null;
+              }
+              setTimeout(() => geocodeNext(index + 1, coords, onDone), 200); // 200ms delay between calls
+            });
+          }
+          let coords = [];
+          geocodeNext(0, coords, (coordsArr) => {
+            showMap(origin, allResults.slice(0, 5), coordsArr);
+          });
         }
       });
     });
@@ -269,38 +259,45 @@ function showMap(origin, clinics5, coordsArr) {
     streetViewControl: false
   });
 
-  // Custom "You" pin (blue)
+  // Custom "You" pin (blue dot)
   const youMarker = new google.maps.Marker({
     position: origin,
     map: map,
     icon: {
-      url: "https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|13B1F0", // blue home
-      scaledSize: new google.maps.Size(40, 65)
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 8,
+      fillColor: "#13B1F0",
+      fillOpacity: 1,
+      strokeColor: "#112027",
+      strokeWeight: 2
     },
     title: "You are here"
   });
+
   let infowindow = new google.maps.InfoWindow();
 
   clinics5.forEach((c, i) => {
+    const latLng = coordsArr[i];
+    if (!latLng) return;
     const marker = new google.maps.Marker({
-  position: latLng,
-  map: map,
-  label: {
-    text: String(i+1),
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: "16px"
-  },
-  icon: {
-    path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-    scale: 5,
-    fillColor: "#0A4A4B",
-    fillOpacity: 1,
-    strokeColor: "#C9D2AC",
-    strokeWeight: 2
-  },
-  title: c.name
-});
+      position: latLng,
+      map: map,
+      label: {
+        text: String(i+1),
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: "16px"
+      },
+      icon: {
+        path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+        scale: 5,
+        fillColor: "#0A4A4B",
+        fillOpacity: 1,
+        strokeColor: "#C9D2AC",
+        strokeWeight: 2
+      },
+      title: c.name
+    });
     marker.addListener('click', function() {
       infowindow.setContent(`<div style="font-weight:600; color:#0A4A4B;">${i+1}. ${c.name}</div><div style="font-size:13px;">${c.address}</div>`);
       infowindow.open(map, marker);
@@ -314,7 +311,7 @@ function onMapsLoaded() {
   document.getElementById('findBtn').disabled = false;
 }
 </script>
-
+  
 <script async defer
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI&callback=onMapsLoaded">
 </script>
