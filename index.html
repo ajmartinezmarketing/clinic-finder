@@ -1,258 +1,103 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Options Medical Location Finder</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-    #map { height: 400px; width: 100%; margin-top: 20px; }
-    .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
-  </style>
-</head>
-<body>
-  <h2>Find Nearest Options Medical Clinic</h2>
-  <input type="text" id="zipInput" placeholder="Enter ZIP Code" />
-  <button onclick="findClinics()">Find Clinics</button>
-  <div id="results"></div>
-  <div id="map"></div>
+  <head>
+    <title>Options Medical Location Finder</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+      #map { height: 400px; width: 100%; margin-top: 20px; }
+      .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+  </head>
+  <body>
+    <h2>Find Nearest Options Medical Clinic</h2>
+    <input type="text" id="zipInput" placeholder="Enter ZIP Code" />
+    <button onclick="findClinics()">Find Clinics</button>
+    <div id="results"></div>
+    <div id="map"></div>
 
-  <script>
-    const clinics = [
-  {
-    "Clinic_Name": "Chandler",
-    "Address": "2815 E Ocotillo Road, Suite 1, Chandler, AZ 85249"
-  },
-  {
-    "Clinic_Name": "Brandon",
-    "Address": "2472 W Brandon Blvd, Brandon, FL 33511"
-  },
-  {
-    "Clinic_Name": "St Pete",
-    "Address": "4301 4th St N, St. Petersburg, FL 33703"
-  },
-  {
-    "Clinic_Name": "Roswell",
-    "Address": "10800 Alpharetta Hwy, Suite 212, Roswell, GA 30076"
-  },
-  {
-    "Clinic_Name": "Snellville",
-    "Address": "1630 Scenic Hwy N, Suite C, Snellville, GA 30078"
-  },
-  {
-    "Clinic_Name": "Glenview",
-    "Address": "1440 Waukegan Rd, Glenview, IL 60025"
-  },
-  {
-    "Clinic_Name": "Lakeview",
-    "Address": "3212 N Lincoln Ave, Chicago, IL 60657"
-  },
-  {
-    "Clinic_Name": "Schaumburg",
-    "Address": "2642 W Schaumburg Rd, Schaumburg, IL 60194"
-  },
-  {
-    "Clinic_Name": "Carmel",
-    "Address": "2456 E 146th St, Carmel, IN 46033"
-  },
-  {
-    "Clinic_Name": "Novi",
-    "Address": "26156 Ingersol Dr, Novi, MI 48375"
-  },
-  {
-    "Clinic_Name": "North Raleigh",
-    "Address": "8111 Creedmoor Rd, Suite 159, Raleigh, NC 27613"
-  },
-  {
-    "Clinic_Name": "Collegeville",
-    "Address": "121 Market St, Suite 3, Collegeville, PA 19426"
-  },
-  {
-    "Clinic_Name": "Arlington Heights",
-    "Address": "21 W Rand Rd, Arlington Heights, IL 60004"
-  },
-  {
-    "Clinic_Name": "Naperville",
-    "Address": "2960 Artesian Rd, Suite 144, Naperville, IL 60564"
-  },
-  {
-    "Clinic_Name": "Oaklawn",
-    "Address": "5116 W 95th St, Oak Lawn, IL 60453"
-  },
-  {
-    "Clinic_Name": "Orland Park",
-    "Address": "14215 South La Grange Rd, Suite 124, Orland Park, IL 60462"
-  },
-  {
-    "Clinic_Name": "Park Ridge",
-    "Address": "118 Euclid Ave, Park Ridge, IL 60068"
-  },
-  {
-    "Clinic_Name": "South Loop",
-    "Address": "1147 S Wabash Ave, Chicago, IL 60605"
-  },
-  {
-    "Clinic_Name": "St Charles",
-    "Address": "2701 E Main St, Suite 101, St Charles, IL 60174"
-  },
-  {
-    "Clinic_Name": "Willowbrook",
-    "Address": "6300 Kingery Hwy, Suite 104, Willowbrook, IL 60527"
-  },
-  {
-    "Clinic_Name": "Fishers",
-    "Address": "13272 Market Square Dr, Suite 103, Fishers, IN 46038"
-  },
-  {
-    "Clinic_Name": "Rochester Hills",
-    "Address": "2863 S Rochester Rd, Rochester Hills, MI 48307"
-  },
-  {
-    "Clinic_Name": "Dublin",
-    "Address": "7537 Sawmill Rd, Dublin, OH 43016"
-  },
-  {
-    "Clinic_Name": "Gahanna",
-    "Address": "959 E Johnstown Rd, Gahanna, OH 43230"
-  },
-  {
-    "Clinic_Name": "Grove City",
-    "Address": "4084 Gantz Rd, Grove City, OH 43123"
-  },
-  {
-    "Clinic_Name": "Strongsville",
-    "Address": "18280 Royalton Rd, Strongsville, OH 44136"
-  },
-  {
-    "Clinic_Name": "University Heights",
-    "Address": "13941 Cedar Rd, South Euclid, OH 44118"
-  },
-  {
-    "Clinic_Name": "Upper Arlington",
-    "Address": "3070 Kingsdale Ctr, Upper Arlington, OH 43221"
-  },
-  {
-    "Clinic_Name": "Westlake",
-    "Address": "30191 Detroit Road, Westlake, OH 44145"
-  },
-  {
-    "Clinic_Name": "Mesa",
-    "Address": "849 N Dobson Rd, Suite 109, Mesa, AZ 85201"
-  },
-  {
-    "Clinic_Name": "Carrollwood",
-    "Address": "13128 N Dale Mabry Hwy, Tampa, FL 33618"
-  },
-  {
-    "Clinic_Name": "Largo",
-    "Address": "10500 Ulmerton Rd, Suite 726, Largo, FL 33771"
-  },
-  {
-    "Clinic_Name": "Suwanee",
-    "Address": "3651 Peachtree Pkwy, Suite B, Suwanee, GA 30024"
-  },
-  {
-    "Clinic_Name": "Algonquin",
-    "Address": "1636 S Randall Rd, Algonquin, IL 60102"
-  },
-  {
-    "Clinic_Name": "Bucktown",
-    "Address": "1966 N Milwaukee Ave, Chicago, IL 60647"
-  },
-  {
-    "Clinic_Name": "Vernon Hills",
-    "Address": "850 N Milwaukee Ave, STE 201, Vernon Hills, IL 60061 "
-  },
-  {
-    "Clinic_Name": "Northeast Indy",
-    "Address": "3345 E 86th St, Indianapolis, IN 46240"
-  },
-  {
-    "Clinic_Name": "Canton",
-    "Address": "41811 Ford Rd, Canton, MI 48187"
-  },
-  {
-    "Clinic_Name": "Kennesaw",
-    "Address": "1610 Ridenour Blvd, #104, Kennesaw, GA 30152"
-  },
-  {
-    "Clinic_Name": "Cary",
-    "Address": "2052 Kildaire Farm Rd, Cary, NC 27518"
-  },
-  {
-    "Clinic_Name": "Charlotte",
-    "Address": "3419 Toringdon Way, Suite 120, Charlotte, NC 28277"
-  },
-  {
-    "Clinic_Name": "Malvern",
-    "Address": "50 National Ave, Suite 200, Malvern, PA 19355"
-  }
-];
+    <script>
+      const clinics = [
+        { name: "Chandler", address: "2815 E Ocotillo Road, Suite 1, Chandler, AZ 85249" },
+        { name: "Brandon", address: "2472 W Brandon Blvd, Brandon, FL 33511" },
+        { name: "St Pete", address: "4301 4th St N, St. Petersburg, FL 33703" },
+        { name: "Roswell", address: "10800 Alpharetta Hwy, Suite 212, Roswell, GA 30076" },
+        { name: "Snellville", address: "1630 Scenic Hwy N, Suite C, Snellville, GA 30078" },
+        { name: "Glenview", address: "1440 Waukegan Rd, Glenview, IL 60025" },
+        { name: "Lakeview", address: "3212 N Lincoln Ave, Chicago, IL 60657" },
+        { name: "Schaumburg", address: "2642 W Schaumburg Rd, Schaumburg, IL 60194" },
+        { name: "Carmel", address: "2456 E 146th St, Carmel, IN 46033" }
+      ];
 
-    async function geocodeZip(zip) {
-      const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${zip}&key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI`);
-      const data = await response.json();
-      if (data.results.length === 0) throw new Error("ZIP not found");
-      return data.results[0].geometry.location;
-    }
+      function findClinics() {
+        const zip = document.getElementById("zipInput").value;
+        const geocoder = new google.maps.Geocoder();
+        const service = new google.maps.DistanceMatrixService();
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "Loading...";
 
-    async function getDistances(origin, destinations) {
-      const destStr = destinations.map(c => encodeURIComponent(c.Address)).join("|");
-      const response = await fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.lat},${origin.lng}&destinations=${destStr}&key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI`);
-      return await response.json();
-    }
+        geocoder.geocode({ address: zip }, function(results, status) {
+          if (status !== "OK" || results.length === 0) {
+            resultsDiv.innerHTML = "Could not find location.";
+            return;
+          }
 
-    async function findClinics() {
-      const zip = document.getElementById("zipInput").value;
-      document.getElementById("results").innerHTML = "Loading...";
-      try {
-        const origin = await geocodeZip(zip);
-        const distData = await getDistances(origin, clinics);
-        const distances = distData.rows[0].elements;
+          const origin = results[0].geometry.location;
+          const destinations = clinics.map(c => c.address);
 
-        const combined = clinics.map((c, i) => {
-          const d = distances[i];
-          return {
-            ...c,
-            distance: d.distance.text,
-            duration: d.duration.text,
-            rawDistance: d.distance.value
-          };
-        }).sort((a, b) => a.rawDistance - b.rawDistance).slice(0, 3);
+          service.getDistanceMatrix({
+            origins: [origin],
+            destinations: destinations,
+            travelMode: google.maps.TravelMode.DRIVING
+          }, function(response, status) {
+            if (status !== "OK") {
+              resultsDiv.innerHTML = "Error getting distances.";
+              return;
+            }
 
-        let output = "";
-        combined.forEach(c => {
-          output += `<div class="result"><strong>${c.Clinic_Name}</strong><br>
-                     ${c.Address}<br>
-                     Distance: ${c.distance}<br>
-                     Drive Time: ${c.duration}</div>`;
+            const elements = response.rows[0].elements;
+            const enriched = clinics.map((clinic, i) => ({
+              ...clinic,
+              distance: elements[i].distance?.text || "N/A",
+              duration: elements[i].duration?.text || "N/A",
+              rawDistance: elements[i].distance?.value || Infinity
+            })).sort((a, b) => a.rawDistance - b.rawDistance).slice(0, 3);
+
+            let html = "";
+            enriched.forEach(c => {
+              html += `<div class="result"><strong>${c.name}</strong><br>${c.address}<br>Distance: ${c.distance}<br>Drive Time: ${c.duration}</div>`;
+            });
+
+            resultsDiv.innerHTML = html;
+            showMap(origin, enriched);
+          });
         });
-        document.getElementById("results").innerHTML = output;
-        initMap(origin, combined);
-      } catch (e) {
-        document.getElementById("results").innerHTML = "Error: " + e.message;
       }
-    }
 
-    function initMap(center, points) {
-      const map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 10,
-        center: center
-      });
-      new google.maps.Marker({
-        position: center,
-        map: map,
-        label: "You"
-      });
-      points.forEach(p => {
-        new google.maps.Marker({
-          position: null, // will geocode below
-          map: map,
-          title: p.Clinic_Name
+      function showMap(origin, clinics) {
+        const map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 10,
+          center: origin
         });
-      });
-    }
-  </script>
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI&callback=()=>{}"></script>
-</body>
+        new google.maps.Marker({ position: origin, map: map, label: "You" });
+
+        const geocoder = new google.maps.Geocoder();
+        clinics.forEach(c => {
+          geocoder.geocode({ address: c.address }, (results, status) => {
+            if (status === "OK" && results[0]) {
+              new google.maps.Marker({
+                position: results[0].geometry.location,
+                map: map,
+                title: c.name
+              });
+            }
+          });
+        });
+      }
+    </script>
+
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI&callback=()=>{}">
+    </script>
+  </body>
 </html>
