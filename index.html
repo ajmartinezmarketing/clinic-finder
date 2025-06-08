@@ -11,7 +11,7 @@
   </head>
   <body>
     <div style="font-size: 12px; color: #888; margin-bottom: 16px;">
-      Version 1.2 — Updated 2024-06-08 (Google Maps load-safe)
+      Version 1.3 — Updated 2024-06-08 (5 closest clinics, batching safe)
     </div>
     <h2>Find Nearest Options Medical Clinic</h2>
     <input type="text" id="zipInput" placeholder="Enter ZIP Code" disabled />
@@ -80,33 +80,52 @@
           }
 
           const origin = results[0].geometry.location;
-          const destinations = clinics.map(c => c.address);
 
-          service.getDistanceMatrix({
-            origins: [origin],
-            destinations: destinations,
-            travelMode: google.maps.TravelMode.DRIVING
-          }, function(response, status) {
-            if (status !== "OK") {
-              resultsDiv.innerHTML = "Error getting distances.";
-              return;
-            }
+          // Split clinics into batches of 25 or less
+          const batchSize = 25;
+          let batches = [];
+          for (let i = 0; i < clinics.length; i += batchSize) {
+            batches.push(clinics.slice(i, i + batchSize));
+          }
 
-            const elements = response.rows[0].elements;
-            const enriched = clinics.map((clinic, i) => ({
-              ...clinic,
-              distance: elements[i].distance?.text || "N/A",
-              duration: elements[i].duration?.text || "N/A",
-              rawDistance: elements[i].distance?.value || Infinity
-            })).sort((a, b) => a.rawDistance - b.rawDistance).slice(0, 3);
+          let allResults = [];
+          let pending = batches.length;
+          let errorOccurred = false;
 
-            let html = "";
-            enriched.forEach(c => {
-              html += `<div class="result"><strong>${c.name}</strong><br>${c.address}<br>Distance: ${c.distance}<br>Drive Time: ${c.duration}</div>`;
+          batches.forEach((batch, batchIndex) => {
+            service.getDistanceMatrix({
+              origins: [origin],
+              destinations: batch.map(c => c.address),
+              travelMode: google.maps.TravelMode.DRIVING
+            }, function(response, status) {
+              if (status !== "OK") {
+                if (!errorOccurred) {
+                  errorOccurred = true;
+                  resultsDiv.innerHTML = "Error getting distances.";
+                }
+                return;
+              }
+
+              response.rows[0].elements.forEach((element, idx) => {
+                allResults.push({
+                  ...batch[idx],
+                  distance: element.distance?.text || "N/A",
+                  duration: element.duration?.text || "N/A",
+                  rawDistance: element.distance?.value || Infinity
+                });
+              });
+
+              pending--;
+              if (pending === 0 && !errorOccurred) {
+                allResults.sort((a, b) => a.rawDistance - b.rawDistance);
+                let html = "";
+                allResults.slice(0, 5).forEach(c => {
+                  html += `<div class="result"><strong>${c.name}</strong><br>${c.address}<br>Distance: ${c.distance}<br>Drive Time: ${c.duration}</div>`;
+                });
+                resultsDiv.innerHTML = html;
+                showMap(origin, allResults.slice(0, 5));
+              }
             });
-
-            resultsDiv.innerHTML = html;
-            showMap(origin, enriched);
           });
         });
       }
