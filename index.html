@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -10,6 +9,7 @@
     </style>
   </head>
   <body>
+    <div style="font-size: 12px; color: #888; margin-bottom: 16px;">Version 1.1 — Updated 2024-06-08</div>
     <h2>Find Nearest Options Medical Clinic</h2>
     <input type="text" id="zipInput" placeholder="Enter ZIP Code" />
     <button onclick="findClinics()">Find Clinics</button>
@@ -17,6 +17,7 @@
     <div id="map"></div>
 
     <script>
+      // All clinics from your CSV (name and address)
       const clinics = [
         { name: "Chandler", address: "2815 E Ocotillo Road, Suite 1, Chandler, AZ 85249" },
         { name: "Brandon", address: "2472 W Brandon Blvd, Brandon, FL 33511" },
@@ -26,7 +27,40 @@
         { name: "Glenview", address: "1440 Waukegan Rd, Glenview, IL 60025" },
         { name: "Lakeview", address: "3212 N Lincoln Ave, Chicago, IL 60657" },
         { name: "Schaumburg", address: "2642 W Schaumburg Rd, Schaumburg, IL 60194" },
-        { name: "Carmel", address: "2456 E 146th St, Carmel, IN 46033" }
+        { name: "Carmel", address: "2456 E 146th St, Carmel, IN 46033" },
+        { name: "Novi", address: "26156 Ingersol Dr, Novi, MI 48375" },
+        { name: "North Raleigh", address: "8111 Creedmoor Rd, Suite 159, Raleigh, NC 27613" },
+        { name: "Collegeville", address: "121 Market St, Suite 3, Collegeville, PA 19426" },
+        { name: "Arlington Heights", address: "21 W Rand Rd, Arlington Heights, IL 60004" },
+        { name: "Naperville", address: "2960 Artesian Rd, Suite 144, Naperville, IL 60564" },
+        { name: "Oaklawn", address: "5116 W 95th St, Oak Lawn, IL 60453" },
+        { name: "Orland Park", address: "14215 South La Grange Rd, Suite 124, Orland Park, IL 60462" },
+        { name: "Park Ridge", address: "118 Euclid Ave, Park Ridge, IL 60068" },
+        { name: "South Loop", address: "1147 S Wabash Ave, Chicago, IL 60605" },
+        { name: "St Charles", address: "2701 E Main St, Suite 101, St Charles, IL 60174" },
+        { name: "Willowbrook", address: "6300 Kingery Hwy, Suite 104, Willowbrook, IL 60527" },
+        { name: "Fishers", address: "13272 Market Square Dr, Suite 103, Fishers, IN 46038" },
+        { name: "Rochester Hills", address: "2863 S Rochester Rd, Rochester Hills, MI 48307" },
+        { name: "Dublin", address: "7537 Sawmill Rd, Dublin, OH 43016" },
+        { name: "Gahanna", address: "959 E Johnstown Rd, Gahanna, OH 43230" },
+        { name: "Grove City", address: "4084 Gantz Rd, Grove City, OH 43123" },
+        { name: "Strongsville", address: "18280 Royalton Rd, Strongsville, OH 44136" },
+        { name: "University Heights", address: "13941 Cedar Rd, South Euclid, OH 44118" },
+        { name: "Upper Arlington", address: "3070 Kingsdale Ctr, Upper Arlington, OH 43221" },
+        { name: "Westlake", address: "30191 Detroit Road, Westlake, OH 44145" },
+        { name: "Mesa", address: "849 N Dobson Rd, Suite 109, Mesa, AZ 85201" },
+        { name: "Carrollwood", address: "13128 N Dale Mabry Hwy, Tampa, FL 33618" },
+        { name: "Largo", address: "10500 Ulmerton Rd, Suite 726, Largo, FL 33771" },
+        { name: "Suwanee", address: "3651 Peachtree Pkwy, Suite B, Suwanee, GA 30024" },
+        { name: "Algonquin", address: "1636 S Randall Rd, Algonquin, IL 60102" },
+        { name: "Bucktown", address: "1966 N Milwaukee Ave, Chicago, IL 60647" },
+        { name: "Vernon Hills", address: "850 N Milwaukee Ave, STE 201, Vernon Hills, IL 60061" },
+        { name: "Northeast Indy", address: "3345 E 86th St, Indianapolis, IN 46240" },
+        { name: "Canton", address: "41811 Ford Rd, Canton, MI 48187" },
+        { name: "Kennesaw", address: "1610 Ridenour Blvd, #104, Kennesaw, GA 30152" },
+        { name: "Cary", address: "2052 Kildaire Farm Rd, Cary, NC 27518" },
+        { name: "Charlotte", address: "3419 Toringdon Way, Suite 120, Charlotte, NC 28277" },
+        { name: "Malvern", address: "50 National Ave, Suite 200, Malvern, PA 19355" }
       ];
 
       function findClinics() {
