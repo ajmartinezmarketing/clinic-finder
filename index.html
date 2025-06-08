@@ -148,7 +148,7 @@
   </style>
 </head>
 <body>
-  <div class="omwl-version">Version 1.8 &mdash; Updated 2024-06-08</div>
+  <div class="omwl-version">Version 1.9 — Updated 2024-06-08</div>
   <div class="omwl-title">Find Nearest Options Medical Clinic</div>
   <input type="text" id="zipInput" placeholder="Enter ZIP Code" disabled />
   <button id="findBtn" onclick="findClinics()" disabled>Find Clinics</button>
@@ -159,9 +159,10 @@
   </div>
 
 <script>
-const clinics = [/* your clinics data here, unchanged */];
-// For brevity, keep your clinics array as it is in your file!
+// --------------- CLINICS DATA (same as before) ---------------
+const clinics = [/* ...your clinics array here... */];
 
+// --------------- FIND CLINICS FUNCTION ---------------
 function findClinics() {
   const zip = document.getElementById("zipInput").value;
   const geocoder = new google.maps.Geocoder();
@@ -169,13 +170,18 @@ function findClinics() {
   const resultsDiv = document.getElementById("results");
   resultsDiv.innerHTML = "Loading...";
 
+  console.log("Geocoding ZIP:", zip);
   geocoder.geocode({ address: zip }, function(results, status) {
-    if (status !== "OK" || results.length === 0) {
-      resultsDiv.innerHTML = "Could not find location.";
+    console.log("Geocode result:", results, "Status:", status);
+    if (status !== "OK" || !results || results.length === 0) {
+      resultsDiv.innerHTML = "Could not find location (" + status + ")";
       return;
     }
 
     const origin = results[0].geometry.location;
+    console.log("Origin found:", origin);
+
+    // batching
     const batchSize = 25;
     let batches = [];
     for (let i = 0; i < clinics.length; i += batchSize) {
@@ -186,16 +192,19 @@ function findClinics() {
     let errorOccurred = false;
 
     batches.forEach((batch, batchIndex) => {
+      console.log("Requesting DistanceMatrix for batch", batchIndex, batch);
       service.getDistanceMatrix({
         origins: [origin],
         destinations: batch.map(c => c.address),
         travelMode: google.maps.TravelMode.DRIVING,
         unitSystem: google.maps.UnitSystem.IMPERIAL
       }, function(response, status) {
-        if (status !== "OK") {
+        console.log("DistanceMatrix response for batch", batchIndex, response, status);
+        if (status !== "OK" || !response) {
           if (!errorOccurred) {
             errorOccurred = true;
-            resultsDiv.innerHTML = "Error getting distances.";
+            resultsDiv.innerHTML = "Error getting distances (" + status + ")";
+            console.error("Error from DistanceMatrix:", status, response);
           }
           return;
         }
@@ -213,6 +222,11 @@ function findClinics() {
 
         pending--;
         if (pending === 0 && !errorOccurred) {
+          console.log("All DistanceMatrix batches complete. Results:", allResults);
+          if (allResults.length === 0) {
+            resultsDiv.innerHTML = "No clinics found nearby.";
+            return;
+          }
           allResults.sort((a, b) => a.rawDistance - b.rawDistance);
           let html = "";
           allResults.slice(0, 5).forEach((c, i) => {
@@ -233,12 +247,13 @@ function findClinics() {
             if (index >= 5) { onDone(coords); return; }
             const geocoder2 = new google.maps.Geocoder();
             geocoder2.geocode({ address: allResults[index].__destAddr }, (results, status) => {
+              console.log("Geocoding for marker", index, ":", results, "Status:", status);
               if (status === "OK" && results[0]) {
                 coords[index] = results[0].geometry.location;
               } else {
                 coords[index] = null;
               }
-              setTimeout(() => geocodeNext(index + 1, coords, onDone), 200); // 200ms delay between calls
+              setTimeout(() => geocodeNext(index + 1, coords, onDone), 200);
             });
           }
           let coords = [];
@@ -251,6 +266,7 @@ function findClinics() {
   });
 }
 
+// --------------- SHOW MAP FUNCTION ---------------
 function showMap(origin, clinics5, coordsArr) {
   const map = new google.maps.Map(document.getElementById("map"), {
     zoom: 10,
@@ -259,16 +275,16 @@ function showMap(origin, clinics5, coordsArr) {
     streetViewControl: false
   });
 
-  // Custom "You" pin (blue dot)
-  const youMarker = new google.maps.Marker({
+  // "You" marker in blue
+  new google.maps.Marker({
     position: origin,
     map: map,
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
       scale: 8,
-      fillColor: "#13B1F0",
+      fillColor: "#0d8fff",
       fillOpacity: 1,
-      strokeColor: "#112027",
+      strokeColor: "#0d8fff",
       strokeWeight: 2
     },
     title: "You are here"
@@ -279,6 +295,7 @@ function showMap(origin, clinics5, coordsArr) {
   clinics5.forEach((c, i) => {
     const latLng = coordsArr[i];
     if (!latLng) return;
+    // Numbered pin, dark green
     const marker = new google.maps.Marker({
       position: latLng,
       map: map,
@@ -286,7 +303,7 @@ function showMap(origin, clinics5, coordsArr) {
         text: String(i+1),
         color: "#fff",
         fontWeight: "bold",
-        fontSize: "16px"
+        fontSize: "14px"
       },
       icon: {
         path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
