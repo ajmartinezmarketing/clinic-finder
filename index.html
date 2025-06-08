@@ -1,166 +1,288 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Options Medical Location Finder</title>
-    <style>
-      body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-      #map { height: 400px; width: 100%; margin-top: 20px; }
-      .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
-      button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
-    </style>
-  </head>
-  <body>
-    <div style="font-size: 12px; color: #888; margin-bottom: 16px;">
-      Version 1.4 — Updated 2024-06-08 (5 closest clinics, batching safe)
-    </div>
-    <h2>Find Nearest Options Medical Clinic</h2>
-    <input type="text" id="zipInput" placeholder="Enter ZIP Code" disabled />
-    <button id="findBtn" onclick="findClinics()" disabled>Find Clinics</button>
-    <div id="results"></div>
-    <div id="map"></div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Options Medical Location Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Noto+Serif:400,400italic,700italic&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #F7F5F2;
+      font-family: 'Montserrat', Arial, sans-serif;
+      color: #203B49;
+      max-width: 1100px;
+      margin: auto;
+      padding: 24px 12px 36px 12px;
+    }
+    .omwl-title {
+      font-size: 2.2rem;
+      color: #0A4A4B;
+      margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    .omwl-version {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+    #zipInput, #findBtn {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-size: 1rem;
+      padding: 10px 14px;
+      border: 1px solid #BFD3D9;
+      border-radius: 5px;
+      margin-right: 7px;
+      background: #fff;
+    }
+    #findBtn {
+      background: #0A4A4B;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #findBtn:hover:enabled {
+      background: #203B49;
+    }
+    #findBtn:disabled, #zipInput:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
 
-    <script>
-      // All clinics from your CSV (name and address)
-      const clinics = [
-        { name: "Chandler", address: "2815 E Ocotillo Road, Suite 1, Chandler, AZ 85249" },
-        { name: "Brandon", address: "2472 W Brandon Blvd, Brandon, FL 33511" },
-        { name: "St Pete", address: "4301 4th St N, St. Petersburg, FL 33703" },
-        { name: "Roswell", address: "10800 Alpharetta Hwy, Suite 212, Roswell, GA 30076" },
-        { name: "Snellville", address: "1630 Scenic Hwy N, Suite C, Snellville, GA 30078" },
-        { name: "Glenview", address: "1440 Waukegan Rd, Glenview, IL 60025" },
-        { name: "Lakeview", address: "3212 N Lincoln Ave, Chicago, IL 60657" },
-        { name: "Schaumburg", address: "2642 W Schaumburg Rd, Schaumburg, IL 60194" },
-        { name: "Carmel", address: "2456 E 146th St, Carmel, IN 46033" },
-        { name: "Novi", address: "26156 Ingersol Dr, Novi, MI 48375" },
-        { name: "North Raleigh", address: "8111 Creedmoor Rd, Suite 159, Raleigh, NC 27613" },
-        { name: "Collegeville", address: "121 Market St, Suite 3, Collegeville, PA 19426" },
-        { name: "Arlington Heights", address: "21 W Rand Rd, Arlington Heights, IL 60004" },
-        { name: "Naperville", address: "2960 Artesian Rd, Suite 144, Naperville, IL 60564" },
-        { name: "Oaklawn", address: "5116 W 95th St, Oak Lawn, IL 60453" },
-        { name: "Orland Park", address: "14215 South La Grange Rd, Suite 124, Orland Park, IL 60462" },
-        { name: "Park Ridge", address: "118 Euclid Ave, Park Ridge, IL 60068" },
-        { name: "South Loop", address: "1147 S Wabash Ave, Chicago, IL 60605" },
-        { name: "St Charles", address: "2701 E Main St, Suite 101, St Charles, IL 60174" },
-        { name: "Willowbrook", address: "6300 Kingery Hwy, Suite 104, Willowbrook, IL 60527" },
-        { name: "Fishers", address: "13272 Market Square Dr, Suite 103, Fishers, IN 46038" },
-        { name: "Rochester Hills", address: "2863 S Rochester Rd, Rochester Hills, MI 48307" },
-        { name: "Dublin", address: "7537 Sawmill Rd, Dublin, OH 43016" },
-        { name: "Gahanna", address: "959 E Johnstown Rd, Gahanna, OH 43230" },
-        { name: "Grove City", address: "4084 Gantz Rd, Grove City, OH 43123" },
-        { name: "Strongsville", address: "18280 Royalton Rd, Strongsville, OH 44136" },
-        { name: "University Heights", address: "13941 Cedar Rd, South Euclid, OH 44118" },
-        { name: "Upper Arlington", address: "3070 Kingsdale Ctr, Upper Arlington, OH 43221" },
-        { name: "Westlake", address: "30191 Detroit Road, Westlake, OH 44145" },
-        { name: "Mesa", address: "849 N Dobson Rd, Suite 109, Mesa, AZ 85201" },
-        { name: "Carrollwood", address: "13128 N Dale Mabry Hwy, Tampa, FL 33618" },
-        { name: "Largo", address: "10500 Ulmerton Rd, Suite 726, Largo, FL 33771" },
-        { name: "Suwanee", address: "3651 Peachtree Pkwy, Suite B, Suwanee, GA 30024" },
-        { name: "Algonquin", address: "1636 S Randall Rd, Algonquin, IL 60102" },
-        { name: "Bucktown", address: "1966 N Milwaukee Ave, Chicago, IL 60647" },
-        { name: "Vernon Hills", address: "850 N Milwaukee Ave, STE 201, Vernon Hills, IL 60061" },
-        { name: "Northeast Indy", address: "3345 E 86th St, Indianapolis, IN 46240" },
-        { name: "Canton", address: "41811 Ford Rd, Canton, MI 48187" },
-        { name: "Kennesaw", address: "1610 Ridenour Blvd, #104, Kennesaw, GA 30152" },
-        { name: "Cary", address: "2052 Kildaire Farm Rd, Cary, NC 27518" },
-        { name: "Charlotte", address: "3419 Toringdon Way, Suite 120, Charlotte, NC 28277" },
-        { name: "Malvern", address: "50 National Ave, Suite 200, Malvern, PA 19355" }
-      ];
+    .main-flex {
+      display: flex;
+      gap: 32px;
+      margin-top: 22px;
+    }
+    .results-container {
+      flex: 1.1;
+      min-width: 330px;
+    }
+    .omwl-card {
+      background: #fff;
+      border-radius: 13px;
+      border-left: 7px solid #BFD3D9;
+      box-shadow: 0 2px 16px 0 rgba(32, 59, 73, 0.07);
+      margin: 0 0 18px 0;
+      padding: 22px 20px 16px 22px;
+      position: relative;
+      transition: box-shadow 0.18s;
+    }
+    .omwl-card strong {
+      font-size: 1.14rem;
+      color: #0A4A4B;
+      font-weight: 700;
+    }
+    .omwl-card .number-badge {
+      position: absolute;
+      left: -35px;
+      top: 28px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #0A4A4B;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.16rem;
+      font-weight: 700;
+      border: 2.5px solid #C9D2AC;
+      box-shadow: 0 1.5px 5px #11202722;
+    }
+    .omwl-hours-label {
+      font-family: 'Noto Serif', serif;
+      font-style: italic;
+      color: #203B49;
+      font-size: 1rem;
+      margin-top: 10px;
+      margin-bottom: 2px;
+      display: block;
+    }
+    .omwl-hours-value {
+      font-family: 'Noto Serif', serif;
+      font-size: 1rem;
+      font-style: italic;
+      color: #112027;
+      margin-bottom: 0.5em;
+      word-break: break-all;
+    }
+    .map-container {
+      flex: 1;
+      min-width: 360px;
+      max-width: 510px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      margin-top: 0;
+    }
+    #map {
+      height: 510px;
+      width: 100%;
+      border-radius: 15px;
+      border: 1.5px solid #BFD3D9;
+      background: #EBF5F3;
+      margin: 0;
+    }
+    @media (max-width: 1100px) {
+      .main-flex { flex-direction: column; gap: 0; }
+      .map-container, .results-container { min-width: 0; max-width: none; }
+      #map { height: 350px; }
+    }
+    @media (max-width: 700px) {
+      .omwl-title { font-size: 1.45rem; }
+      .omwl-card { padding: 15px 10px 12px 12px; }
+      #map { height: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="omwl-version">Version 1.6 &mdash; Updated 2024-06-08</div>
+  <div class="omwl-title">Find Nearest Options Medical Clinic</div>
+  <input type="text" id="zipInput" placeholder="Enter ZIP Code" disabled />
+  <button id="findBtn" onclick="findClinics()" disabled>Find Clinics</button>
 
-      function findClinics() {
-        const zip = document.getElementById("zipInput").value;
-        const geocoder = new google.maps.Geocoder();
-        const service = new google.maps.DistanceMatrixService();
-        const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = "Loading...";
+  <div class="main-flex">
+    <div class="results-container" id="results"></div>
+    <div class="map-container"><div id="map"></div></div>
+  </div>
 
-        geocoder.geocode({ address: zip }, function(results, status) {
-          if (status !== "OK" || results.length === 0) {
-            resultsDiv.innerHTML = "Could not find location.";
-            return;
+<script>
+const clinics = [{"name": "Chandler", "address": "2815 E Ocotillo Road, Suite 1, Chandler, AZ 85249", "hours": "Mon: 12p-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Brandon", "address": "2472 W Brandon Blvd, Brandon, FL 33511", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "St Pete", "address": "4301 4th St N, St. Petersburg, FL 33703", "hours": "Mon: 9a-4p | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Roswell", "address": "10800 Alpharetta Hwy, Suite 212, Roswell, GA 30076", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Snellville", "address": "1630 Scenic Hwy N, Suite C, Snellville, GA 30078", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Glenview", "address": "1440 Waukegan Rd, Glenview, IL 60025", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Lakeview", "address": "3212 N Lincoln Ave, Chicago, IL 60657", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Schaumburg", "address": "2642 W Schaumburg Rd, Schaumburg, IL 60194", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Carmel", "address": "2456 E 146th St, Carmel, IN 46033", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Novi", "address": "26156 Ingersol Dr, Novi, MI 48375", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: CLOSED | Thu: 9a-7pm | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "North Raleigh", "address": "8111 Creedmoor Rd, Suite 159, Raleigh, NC 27613", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: 8a-4p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Collegeville", "address": "121 Market St, Suite 3, Collegeville, PA 19426", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Arlington Heights", "address": "21 W Rand Rd, Arlington Heights, IL 60004", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Naperville", "address": "2960 Artesian Rd, Suite 144, Naperville, IL 60564", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Oaklawn", "address": "5116 W 95th St, Oak Lawn, IL 60453", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Orland Park", "address": "14215 South La Grange Rd, Suite 124, Orland Park, IL 60462", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Park Ridge", "address": "118 Euclid Ave, Park Ridge, IL 60068", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "South Loop", "address": "1147 S Wabash Ave, Chicago, IL 60605", "hours": "Mon: CLOSED | Tue: 7a-5:30p | Wed: 7a-5:30p | Thu: 7a-5:30p | Fri: 7a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "St Charles", "address": "2701 E Main St, Suite 101, St Charles, IL 60174", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Willowbrook", "address": "6300 Kingery Hwy, Suite 104, Willowbrook, IL 60527", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Fishers", "address": "13272 Market Square Dr, Suite 103, Fishers, IN 46038", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Rochester Hills", "address": "2863 S Rochester Rd, Rochester Hills, MI 48307", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Dublin", "address": "7537 Sawmill Rd, Dublin, OH 43016", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Gahanna", "address": "959 E Johnstown Rd, Gahanna, OH 43230", "hours": "Mon: 8a-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Grove City", "address": "4084 Gantz Rd, Grove City, OH 43123", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Strongsville", "address": "18280 Royalton Rd, Strongsville, OH 44136", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "University Heights", "address": "13941 Cedar Rd, South Euclid, OH 44118", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Upper Arlington", "address": "3070 Kingsdale Ctr, Upper Arlington, OH 43221", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Westlake", "address": "30191 Detroit Road, Westlake, OH 44145", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: 8a-7pm | Fri: 8a-2pm | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Mesa", "address": "849 N Dobson Rd, Suite 109, Mesa, AZ 85201", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: CLOSED | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Carrollwood", "address": "13128 N Dale Mabry Hwy, Tampa, FL 33618", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Largo", "address": "10500 Ulmerton Rd, Suite 726, Largo, FL 33771", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Suwanee", "address": "3651 Peachtree Pkwy, Suite B, Suwanee, GA 30024", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 11a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Algonquin", "address": "1636 S Randall Rd, Algonquin, IL 60102", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Bucktown", "address": "1966 N Milwaukee Ave, Chicago, IL 60647", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: CLOSED | Thu: 8a-4p | Fri: CLOSED | Sat: CLOSED | Sun: CLOSED"}, {"name": "Vernon Hills", "address": "850 N Milwaukee Ave, STE 201, Vernon Hills, IL 60061", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: CLOSED | Thu: CLOSED | Fri: 8a-4p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Northeast Indy", "address": "3345 E 86th St, Indianapolis, IN 46240", "hours": "Mon: CLOSED | Tue: 8a-7pm | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2pm | Sat: CLOSED | Sun: CLOSED"}, {"name": "Canton", "address": "41811 Ford Rd, Canton, MI 48187", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 9a-7p | Thu: CLOSED | Fri: 8a-2pm | Sat: CLOSED | Sun: CLOSED"}, {"name": "Kennesaw", "address": "1610 Ridenour Blvd, #104, Kennesaw, GA 30152", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 11a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}, {"name": "Cary", "address": "2052 Kildaire Farm Rd, Cary, NC 27518", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 11a-7p | Thu: CLOSED | Fri: CLOSED | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Charlotte", "address": "3419 Toringdon Way, Suite 120, Charlotte, NC 28277", "hours": "Mon: CLOSED | Tue: 8a-7p | Wed: 11a-7p | Thu: 8a-7p | Fri: 8a-4p | Sat: 8a-2p | Sun: CLOSED"}, {"name": "Malvern", "address": "50 National Ave, Suite 200, Malvern, PA 19355", "hours": "Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}];
+
+function createNumberedPinURL(number, color) {
+  // color: hex w/o #
+  // Google Chart API returns PNG marker with number (1-99) and color
+  return `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=${number}|${color}|FFFFFF`;
+}
+
+function findClinics() {
+  const zip = document.getElementById("zipInput").value;
+  const geocoder = new google.maps.Geocoder();
+  const service = new google.maps.DistanceMatrixService();
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "Loading...";
+
+  geocoder.geocode({ address: zip }, function(results, status) {
+    if (status !== "OK" || results.length === 0) {
+      resultsDiv.innerHTML = "Could not find location.";
+      return;
+    }
+
+    const origin = results[0].geometry.location;
+    // Split clinics into batches of 25 or less
+    const batchSize = 25;
+    let batches = [];
+    for (let i = 0; i < clinics.length; i += batchSize) {
+      batches.push(clinics.slice(i, i + batchSize));
+    }
+    let allResults = [];
+    let pending = batches.length;
+    let errorOccurred = false;
+
+    batches.forEach((batch, batchIndex) => {
+      service.getDistanceMatrix({
+        origins: [origin],
+        destinations: batch.map(c => c.address),
+        travelMode: google.maps.TravelMode.DRIVING,
+        unitSystem: google.maps.UnitSystem.IMPERIAL
+      }, function(response, status) {
+        if (status !== "OK") {
+          if (!errorOccurred) {
+            errorOccurred = true;
+            resultsDiv.innerHTML = "Error getting distances.";
           }
+          return;
+        }
 
-          const origin = results[0].geometry.location;
-
-          // Split clinics into batches of 25 or less
-          const batchSize = 25;
-          let batches = [];
-          for (let i = 0; i < clinics.length; i += batchSize) {
-            batches.push(clinics.slice(i, i + batchSize));
-          }
-
-          let allResults = [];
-          let pending = batches.length;
-          let errorOccurred = false;
-
-          batches.forEach((batch, batchIndex) => {
-           service.getDistanceMatrix({
-  origins: [origin],
-  destinations: batch.map(c => c.address),
-  travelMode: google.maps.TravelMode.DRIVING,
-  unitSystem: google.maps.UnitSystem.IMPERIAL
-}, function(response, status) {
-              if (status !== "OK") {
-                if (!errorOccurred) {
-                  errorOccurred = true;
-                  resultsDiv.innerHTML = "Error getting distances.";
-                }
-                return;
-              }
-
-              response.rows[0].elements.forEach((element, idx) => {
-                allResults.push({
-                  ...batch[idx],
-                  distance: element.distance?.text || "N/A",
-                  duration: element.duration?.text || "N/A",
-                  rawDistance: element.distance?.value || Infinity
-                });
-              });
-
-              pending--;
-              if (pending === 0 && !errorOccurred) {
-                allResults.sort((a, b) => a.rawDistance - b.rawDistance);
-                let html = "";
-                allResults.slice(0, 5).forEach(c => {
-                  html += `<div class="result"><strong>${c.name}</strong><br>${c.address}<br>Distance: ${c.distance}<br>Drive Time: ${c.duration}</div>`;
-                });
-                resultsDiv.innerHTML = html;
-                showMap(origin, allResults.slice(0, 5));
-              }
-            });
+        response.rows[0].elements.forEach((element, idx) => {
+          allResults.push({
+            ...batch[idx],
+            distance: element.distance?.text || "N/A",
+            duration: element.duration?.text || "N/A",
+            rawDistance: element.distance?.value || Infinity
           });
         });
-      }
 
-      function showMap(origin, clinics) {
-        const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 10,
-          center: origin
-        });
-        new google.maps.Marker({ position: origin, map: map, label: "You" });
-
-        const geocoder = new google.maps.Geocoder();
-        clinics.forEach(c => {
-          geocoder.geocode({ address: c.address }, (results, status) => {
-            if (status === "OK" && results[0]) {
-              new google.maps.Marker({
-                position: results[0].geometry.location,
-                map: map,
-                title: c.name
-              });
-            }
+        pending--;
+        if (pending === 0 && !errorOccurred) {
+          allResults.sort((a, b) => a.rawDistance - b.rawDistance);
+          let html = "";
+          allResults.slice(0, 5).forEach((c, i) => {
+            html += `<div class="omwl-card">
+              <div class="number-badge">${i+1}</div>
+              <strong>${c.name}</strong><br>
+                ${c.address}<br>
+                Distance: ${c.distance}<br>
+                Drive Time: ${c.duration}<br>
+                <span class="omwl-hours-label">Hours of Operation</span>
+                <span class="omwl-hours-value">${c.hours ? c.hours : "See website or call for details."}</span>
+            </div>`;
           });
+          resultsDiv.innerHTML = html;
+          showMap(origin, allResults.slice(0, 5));
+        }
+      });
+    });
+  });
+}
+
+function showMap(origin, clinics5) {
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 10,
+    center: origin,
+    mapTypeControl: false,
+    streetViewControl: false
+  });
+
+  // Custom "You" pin (blue)
+  const youMarker = new google.maps.Marker({
+    position: origin,
+    map: map,
+    icon: {
+      url: "https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|13B1F0", // blue home
+      scaledSize: new google.maps.Size(40, 65)
+    },
+    title: "You are here"
+  });
+  let infowindow = new google.maps.InfoWindow();
+
+  clinics5.forEach((c, i) => {
+    const pinUrl = createNumberedPinURL(i+1, "0A4A4B"); // dark green pin for OMWL
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: c.address }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        const marker = new google.maps.Marker({
+          position: results[0].geometry.location,
+          map: map,
+          icon: {
+            url: pinUrl,
+            scaledSize: new google.maps.Size(38, 60)
+          },
+          label: undefined,
+          title: c.name
+        });
+        marker.addListener('click', function() {
+          infowindow.setContent(`<div style="font-weight:600; color:#0A4A4B;">${i+1}. ${c.name}</div><div style="font-size:13px;">${c.address}</div>`);
+          infowindow.open(map, marker);
         });
       }
+    });
+  });
+}
 
-      // Enable UI only when Maps is loaded
-      function onMapsLoaded() {
-        document.getElementById('zipInput').disabled = false;
-        document.getElementById('findBtn').disabled = false;
-      }
-    </script>
+// Enable UI only when Maps is loaded
+function onMapsLoaded() {
+  document.getElementById('zipInput').disabled = false;
+  document.getElementById('findBtn').disabled = false;
+}
+</script>
 
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI&callback=onMapsLoaded">
-    </script>
-  </body>
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI&callback=onMapsLoaded">
+</script>
+</body>
 </html>
