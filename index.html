@@ -272,17 +272,6 @@ function showMap(origin, clinics5, coordsArr) {
     streetViewControl: false
   });
 
-  // "You" marker, blue
-  new google.maps.Marker({
-    position: origin,
-    map: map,
-    icon: {
-      url: "https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|13B1F0",
-      scaledSize: new google.maps.Size(40, 65)
-    },
-    title: "You are here"
-  });
-
   let infowindow = new google.maps.InfoWindow();
   clinics5.forEach((c, i) => {
     const latLng = coordsArr[i];
@@ -303,6 +292,18 @@ function showMap(origin, clinics5, coordsArr) {
     });
   });
 }
+
+// "You" marker, blue, on top
+new google.maps.Marker({
+  position: origin,
+  map: map,
+  icon: {
+    url: "https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|13B1F0",
+    scaledSize: new google.maps.Size(40, 65)
+  },
+  title: "You are here",
+  zIndex: 999 // Ensure it appears above others
+});
 
 // Enable UI only when Maps is loaded
 function onMapsLoaded() {
