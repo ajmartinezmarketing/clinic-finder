@@ -93,11 +93,12 @@
           let errorOccurred = false;
 
           batches.forEach((batch, batchIndex) => {
-            service.getDistanceMatrix({
-              origins: [origin],
-              destinations: batch.map(c => c.address),
-              travelMode: google.maps.TravelMode.DRIVING
-            }, function(response, status) {
+           service.getDistanceMatrix({
+  origins: [origin],
+  destinations: batch.map(c => c.address),
+  travelMode: google.maps.TravelMode.DRIVING,
+  unitSystem: google.maps.UnitSystem.IMPERIAL
+}, function(response, status) {
               if (status !== "OK") {
                 if (!errorOccurred) {
                   errorOccurred = true;
