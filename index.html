@@ -282,19 +282,25 @@ function showMap(origin, clinics5, coordsArr) {
   let infowindow = new google.maps.InfoWindow();
 
   clinics5.forEach((c, i) => {
-    const pinUrl = createNumberedPinURL(i+1, "0A4A4B"); // dark green pin for OMWL
-    const latLng = coordsArr[i];
-    if (!latLng) return;
     const marker = new google.maps.Marker({
-      position: latLng,
-      map: map,
-      icon: {
-        url: pinUrl,
-        scaledSize: new google.maps.Size(33, 50)
-      },
-      label: undefined,
-      title: c.name
-    });
+  position: latLng,
+  map: map,
+  label: {
+    text: String(i+1),
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: "16px"
+  },
+  icon: {
+    path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+    scale: 5,
+    fillColor: "#0A4A4B",
+    fillOpacity: 1,
+    strokeColor: "#C9D2AC",
+    strokeWeight: 2
+  },
+  title: c.name
+});
     marker.addListener('click', function() {
       infowindow.setContent(`<div style="font-weight:600; color:#0A4A4B;">${i+1}. ${c.name}</div><div style="font-size:13px;">${c.address}</div>`);
       infowindow.open(map, marker);
