@@ -6,13 +6,16 @@
       body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
       #map { height: 400px; width: 100%; margin-top: 20px; }
       .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+      button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
   </head>
   <body>
-    <div style="font-size: 12px; color: #888; margin-bottom: 16px;">Version 1.1 — Updated 2024-06-08</div>
+    <div style="font-size: 12px; color: #888; margin-bottom: 16px;">
+      Version 1.2 — Updated 2024-06-08 (Google Maps load-safe)
+    </div>
     <h2>Find Nearest Options Medical Clinic</h2>
-    <input type="text" id="zipInput" placeholder="Enter ZIP Code" />
-    <button onclick="findClinics()">Find Clinics</button>
+    <input type="text" id="zipInput" placeholder="Enter ZIP Code" disabled />
+    <button id="findBtn" onclick="findClinics()" disabled>Find Clinics</button>
     <div id="results"></div>
     <div id="map"></div>
 
@@ -128,10 +131,16 @@
           });
         });
       }
+
+      // Enable UI only when Maps is loaded
+      function onMapsLoaded() {
+        document.getElementById('zipInput').disabled = false;
+        document.getElementById('findBtn').disabled = false;
+      }
     </script>
 
     <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI&callback=()=>{}">
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2ZRf58xsFPABXym2r1htg008auaGj6BI&callback=onMapsLoaded">
     </script>
   </body>
 </html>
