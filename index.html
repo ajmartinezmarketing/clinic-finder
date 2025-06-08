@@ -152,13 +152,12 @@
   <div class="omwl-title">Find Nearest Options Medical Clinic</div>
   <input type="text" id="zipInput" placeholder="Enter ZIP Code" disabled />
   <button id="findBtn" onclick="findClinics()" disabled>Find Clinics</button>
-
   <div class="main-flex">
     <div class="results-container" id="results"></div>
     <div class="map-container"><div id="map"></div></div>
   </div>
-
 <script>
+  
 const clinics = [
   {"name":"Chandler","address":"2815 E Ocotillo Road, Suite 1, Chandler, AZ 85249","hours":"Mon: 12p-7p | Tue: 8a-7p | Wed: 8a-7p | Thu: 8a-7p | Fri: 8a-2p | Sat: 8a-2p | Sun: CLOSED"},
   {"name":"Brandon","address":"2472 W Brandon Blvd, Brandon, FL 33511","hours":"Mon: CLOSED | Tue: 8a-7p | Wed: CLOSED | Thu: 8a-7p | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"},
@@ -204,8 +203,21 @@ const clinics = [
   {"name":"Malvern","address":"50 National Ave, Suite 200, Malvern, PA 19355","hours":"Mon: CLOSED | Tue: CLOSED | Wed: 8a-7p | Thu: CLOSED | Fri: 8a-2p | Sat: CLOSED | Sun: CLOSED"}
 ];
 
+// Helper for numbered markers (no more external URLs)
+function createNumberedPin(number, color) {
+  return {
+    path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+    scale: 5,
+    fillColor: color,
+    fillOpacity: 1,
+    strokeColor: "#C9D2AC",
+    strokeWeight: 2,
+    labelOrigin: new google.maps.Point(15, 10)
+  };
+}
+
 function findClinics() {
-  const zip = document.getElementById("zipInput").value.trim();
+  const zip = document.getElementById("zipInput").value;
   const geocoder = new google.maps.Geocoder();
   const service = new google.maps.DistanceMatrixService();
   const resultsDiv = document.getElementById("results");
@@ -216,19 +228,15 @@ function findClinics() {
       resultsDiv.innerHTML = "Could not find location.";
       return;
     }
-
     const origin = results[0].geometry.location;
-
-    // Split clinics into batches of 25 or less
+    // Batch if needed (for larger datasets)
     const batchSize = 25;
     let batches = [];
     for (let i = 0; i < clinics.length; i += batchSize) {
       batches.push(clinics.slice(i, i + batchSize));
     }
     let allResults = [];
-    let pending = batches.length;
-    let errorOccurred = false;
-
+    let pending = batches.length, errorOccurred = false;
     batches.forEach((batch, batchIndex) => {
       service.getDistanceMatrix({
         origins: [origin],
@@ -243,9 +251,7 @@ function findClinics() {
           }
           return;
         }
-
         let destAddresses = response.destinationAddresses;
-
         response.rows[0].elements.forEach((element, idx) => {
           allResults.push({
             ...batch[idx],
@@ -255,7 +261,6 @@ function findClinics() {
             __destAddr: destAddresses[idx]
           });
         });
-
         pending--;
         if (pending === 0 && !errorOccurred) {
           allResults.sort((a, b) => a.rawDistance - b.rawDistance);
@@ -272,8 +277,7 @@ function findClinics() {
             </div>`;
           });
           resultsDiv.innerHTML = html;
-
-          // Geocode the top 5 for map markers
+          // Serial geocode for top 5 (avoids rate limiting)
           function geocodeNext(index, coords, onDone) {
             if (index >= 5) { onDone(coords); return; }
             const geocoder2 = new google.maps.Geocoder();
@@ -283,7 +287,7 @@ function findClinics() {
               } else {
                 coords[index] = null;
               }
-              setTimeout(() => geocodeNext(index + 1, coords, onDone), 200);
+              setTimeout(() => geocodeNext(index + 1, coords, onDone), 180);
             });
           }
           let coords = [];
@@ -304,7 +308,23 @@ function showMap(origin, clinics5, coordsArr) {
     streetViewControl: false
   });
 
-  // Markers for clinics (numbered)
+  // "You" pin as a blue circle
+  new google.maps.Marker({
+    position: origin,
+    map: map,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 9,
+      fillColor: "#13B1F0",
+      fillOpacity: 1,
+      strokeColor: "#203B49",
+      strokeWeight: 3
+    },
+    title: "You are here",
+    zIndex: 999
+  });
+
+  let infowindow = new google.maps.InfoWindow();
   clinics5.forEach((c, i) => {
     const latLng = coordsArr[i];
     if (!latLng) return;
@@ -312,7 +332,7 @@ function showMap(origin, clinics5, coordsArr) {
       position: latLng,
       map: map,
       label: {
-        text: String(i+1),
+        text: String(i + 1),
         color: "#fff",
         fontWeight: "bold",
         fontSize: "16px"
@@ -323,32 +343,18 @@ function showMap(origin, clinics5, coordsArr) {
         fillColor: "#0A4A4B",
         fillOpacity: 1,
         strokeColor: "#C9D2AC",
-        strokeWeight: 2
+        strokeWeight: 2,
+        labelOrigin: new google.maps.Point(15, 10)
       },
-      title: `${i+1}. ${c.name}`,
-      zIndex: 10
+      title: c.name
     });
-    let infowindow = new google.maps.InfoWindow();
     marker.addListener('click', function() {
       infowindow.setContent(`<div style="font-weight:600; color:#0A4A4B;">${i+1}. ${c.name}</div><div style="font-size:13px;">${c.address}</div>`);
       infowindow.open(map, marker);
     });
   });
-
-  // "You" marker (home icon, blue, highest zIndex)
-  new google.maps.Marker({
-    position: origin,
-    map: map,
-    icon: {
-      url: "https://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=home|13B1F0",
-      scaledSize: new google.maps.Size(40, 65)
-    },
-    title: "You are here",
-    zIndex: 9999
-  });
 }
 
-// Enable UI only when Maps is loaded
 function onMapsLoaded() {
   document.getElementById('zipInput').disabled = false;
   document.getElementById('findBtn').disabled = false;
