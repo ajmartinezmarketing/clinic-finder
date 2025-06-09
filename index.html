@@ -373,11 +373,11 @@ function showMap(origin, clinics5, coordsArr) {
     overlay.setMap(map);
     
     marker.addListener('click', function() {
-      infowindow.setContent(
-        `<div style="font-weight:600; color:#0A4A4B;">${i+1}. ${c.name}</div><div style="font-size:13px;">${c.address}</div>`
-      );
-      infowindow.open(map, marker);
-    });
+    infowindow.setContent(
+      `<div style="font-weight:600; color:#0A4A4B; margin:0; padding:0; line-height:1.2;">${i+1}. ${c.name}</div><div style="font-size:13px; margin:2px 0 0 0; padding:0; line-height:1.3; color:#666;">${c.address}</div>`
+    );
+    infowindow.open(map, marker);
+  });
   });
 }
 
