@@ -338,7 +338,13 @@ function showMap(origin, clinics5, coordsArr) {
         url: numberedPinSVG(i+1),
         scaledSize: new google.maps.Size(40, 65)
       },
-      title: c.name
+      title: c.name,
+      label: {
+        text: c.name,
+        color: '#0A4A4B',
+        fontSize: '12px',
+        fontWeight: '600'
+      }
     });
     marker.addListener('click', function() {
       infowindow.setContent(
